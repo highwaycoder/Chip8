@@ -36,7 +36,8 @@ void cpu_run(cpu_t* cpu)
     if((cur->tv_usec - prev->tv_usec) >= 17)
     {
       cpu->delay -= (cur->tv_usec - prev->tv_usec) / 17;
-      cpu->sound -= (cur->tv_usec - prev->tv_usec) / 17;
+      if(cpu->sound > 0)
+        cpu->sound -= (cur->tv_usec - prev->tv_usec) / 17;
       gettimeofday(prev,NULL);
     }
     sleep(1);
@@ -70,6 +71,10 @@ void cpu_load(FILE* from,cpu_t* cpu)
   fread(load_into,sizeof(uint8_t),(0x1000-0x200),from);
   // heap_dump(*cpu);
   cpu->pc = 0x200; // start at the beginning, of course
+  // set the delay to 0xFF
+  cpu->delay = 0xFF;
+  // buzzer off to start with
+  cpu->sound = 0x00;
 }
 
 cpu_t* new_cpu(void)
