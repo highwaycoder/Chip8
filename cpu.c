@@ -279,20 +279,21 @@ void dump_state(cpu_t cpu)
   printf("Draw next frame: %s\n",cpu.draw ? "yes" : "no");
   printf("Current opcode: %.4X\n",(cpu.memory[cpu.pc]<<8) | cpu.memory[cpu.pc+1]);
   stack_trace(cpu);
-  #ifdef MEM_DUMP
   heap_dump(cpu);
-  #endif
 }
 
 void heap_dump(cpu_t cpu)
 {
-  int i=0;
-  printf("Memory: \n");
+  FILE* logfile = fopen("core.dmp","w");
+  fwrite(cpu.memory,1,0x1000,logfile);
+  /* -- non-binary version --
+  fprintf(logfile,"Memory: \n");
   for(i=0;i<0x1000;i++)
   {
-    printf("{%.4X : %.2X} ",i,cpu.memory[i]);
-    if(!(i % 5)) putchar('\n');
+    fprintf(logfile,"{%.4X : %.2X} ",i,cpu.memory[i]);
+    if(!(i % 5)) fputc('\n',logfile);
   }
+  */
 }
 
 void stack_trace(cpu_t cpu)
