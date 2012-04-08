@@ -29,8 +29,14 @@ void cpu_run(cpu_t* cpu)
   srand(prev->tv_usec);
   while(cpu->errno == ENONE)
   {
+    // dump_state(*cpu);
+    if(cpu->draw)
+    {
+      flip(cpu->screen,frameno);
+      cpu->draw = 0;
+      sleep(1);
+    }
     step(cpu);
-    flip(cpu->screen,frameno);
     frameno++;
     gettimeofday(cur,NULL);
     if((cur->tv_usec - prev->tv_usec) >= 17)
@@ -40,7 +46,8 @@ void cpu_run(cpu_t* cpu)
         cpu->sound -= (cur->tv_usec - prev->tv_usec) / 17;
       gettimeofday(prev,NULL);
     }
-    sleep(1);
+    // pause for input
+    //getchar();
   }
   dump_state(*cpu);
 }
@@ -75,6 +82,12 @@ void cpu_load(FILE* from,cpu_t* cpu)
   cpu->delay = 0xFF;
   // buzzer off to start with
   cpu->sound = 0x00;
+  // set all the registers to 0
+  memset(cpu->registers,0,16);
+  // set the address register to 0
+  cpu->address = 0x0;
+  // don't draw until the draw opcode occurs
+  cpu->draw = 0;
 }
 
 cpu_t* new_cpu(void)
@@ -225,12 +238,13 @@ void dump_state(cpu_t cpu)
 {
   int i=0;
   for(i=0;i<16;i++)
-    printf("Register %.1X: %.1X\n",i,cpu.registers[i]);
+    printf("Register %.1X: %.2X\n",i,cpu.registers[i]);
   printf("Address Register (I): %.4X\n",cpu.address);
-  printf("Delay register: %.1X\n",cpu.delay);
-  printf("Sound register: %.1X\n",cpu.sound);
-  printf("Program Counter: %.2X\n",cpu.pc);
-  printf("Error number: %.1X\n",cpu.errno);
+  printf("Delay register: %.2X\n",cpu.delay);
+  printf("Sound register: %.2X\n",cpu.sound);
+  printf("Program Counter: %.4X\n",cpu.pc);
+  printf("Error number: %.2X\n",cpu.errno);
+  printf("Draw next frame: %s\n",cpu.draw ? "yes" : "no");
   printf("Current opcode: %.4X\n",(cpu.memory[cpu.pc]<<8) | cpu.memory[cpu.pc+1]);
   stack_trace(cpu);
   #ifdef MEM_DUMP
