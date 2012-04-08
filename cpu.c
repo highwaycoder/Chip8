@@ -24,12 +24,14 @@ void cpu_run(cpu_t* cpu)
 {
   struct timeval* prev = malloc(sizeof(struct timeval));
   struct timeval* cur = malloc(sizeof(struct timeval));
+  unsigned int frameno;
   gettimeofday(prev,NULL);
   srand(prev->tv_usec);
   while(cpu->errno == ENONE)
   {
     step(cpu);
-    flip(cpu->screen);
+    flip(cpu->screen,frameno);
+    frameno++;
     gettimeofday(cur,NULL);
     if((cur->tv_usec - prev->tv_usec) >= 17)
     {
@@ -42,7 +44,7 @@ void cpu_run(cpu_t* cpu)
   dump_state(*cpu);
 }
 
-void flip(uint8_t screen[64][32])
+void flip(uint8_t screen[64][32],unsigned int frameno)
 {
   int x = 0,y = 0;
   while(y < 32)
@@ -59,6 +61,7 @@ void flip(uint8_t screen[64][32])
       y++;
     }
   }
+  printf("Frame number: %d\n",frameno);
 }
 
 void cpu_load(FILE* from,cpu_t* cpu)

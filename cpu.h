@@ -38,6 +38,6 @@ void stack_trace(cpu_t cpu);
 void step(cpu_t* cpu);
 void cpu_load(FILE* from,cpu_t* cpu);
 void cpu_run(cpu_t* cpu);
-void flip(uint8_t screen[64][32]);
+void flip(uint8_t screen[64][32],unsigned int frameno);
 
 #endif
