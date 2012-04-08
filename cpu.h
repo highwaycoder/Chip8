@@ -17,8 +17,6 @@ enum ERRORS {
   ENIMP = 0x6,
 };
 
-typedef uint8_t screen_t;
-
 typedef struct {
   uint8_t registers[16];
   uint8_t delay;
@@ -29,7 +27,7 @@ typedef struct {
   uint8_t* memory;
   uint8_t errno;
   uint16_t address;
-  screen_t* screen;
+  uint8_t screen[64][32];
 } cpu_t;
 
 void dump_state(cpu_t cpu);
@@ -40,5 +38,6 @@ void stack_trace(cpu_t cpu);
 void step(cpu_t* cpu);
 void cpu_load(FILE* from,cpu_t* cpu);
 void cpu_run(cpu_t* cpu);
+void flip(uint8_t screen[64][32]);
 
 #endif

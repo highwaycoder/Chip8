@@ -29,7 +29,7 @@ void cpu_run(cpu_t* cpu)
   while(cpu->errno == ENONE)
   {
     step(cpu);
-    dump_state(*cpu);
+    flip(cpu->screen);
     gettimeofday(cur,NULL);
     if((cur->tv_usec - prev->tv_usec) >= 17)
     {
@@ -38,6 +38,26 @@ void cpu_run(cpu_t* cpu)
       gettimeofday(prev,NULL);
     }
     sleep(1);
+  }
+  dump_state(*cpu);
+}
+
+void flip(uint8_t screen[64][32])
+{
+  int x = 0,y = 0;
+  while(y < 32)
+  {
+    if(screen[x][y] & 0x1)
+      putchar('#');
+    else
+      putchar(' ');
+    x++;
+    if(x == 32)
+    {
+      putchar('\n');
+      x = 0;
+      y++;
+    }
   }
 }
 
@@ -55,7 +75,6 @@ cpu_t* new_cpu(void)
   memset(cpu,0,sizeof(cpu_t));
   cpu->memory = malloc(0x1000);
   memset(cpu->memory,0,0x1000);
-  cpu->screen = malloc(sizeof(screen_t) * (64 * 32));
   return cpu;
 }
 

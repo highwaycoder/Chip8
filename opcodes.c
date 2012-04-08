@@ -10,7 +10,7 @@ void sys(cpu_t* cpu,uint16_t current_opcode)
   switch(current_opcode & 0xFF)
   {
     case 0xE0:
-      memset(cpu->screen,0,sizeof(screen_t) * (64 * 32));
+      memset(cpu->screen,0,(64 * 32));
       break;
     case 0xEE:
       if(cpu->stack_pointer == 0)
@@ -235,8 +235,55 @@ void rnd(cpu_t* cpu,uint16_t current_opcode)
 
 void drw(cpu_t* cpu,uint16_t current_opcode)
 {
-  // stub, but continue logic
-  // cpu->errno = ENIMP;
+  uint8_t num_bytes = (uint8_t)(current_opcode);
+  uint8_t x_coord = cpu->registers[(current_opcode & 0x0F00) >> 8];
+  uint8_t y_coord = cpu->registers[(current_opcode & 0x00F0) >> 4];
+  uint8_t sprite_byte;
+  uint8_t pixels[8] = {0};
+  unsigned int i = 0;
+  
+  // no collision yet
+  cpu->registers[0xF] = 0x0;
+  
+  for(i=0;i<num_bytes;i++)
+  {
+    sprite_byte = cpu->memory[cpu->address + i];
+    // set up the individual pixels
+    pixels[0] = (sprite_byte & 0x80) >> 7;
+    pixels[1] = (sprite_byte & 0x40) >> 6;
+    pixels[2] = (sprite_byte & 0x20) >> 5;
+    pixels[3] = (sprite_byte & 0x10) >> 4;
+    pixels[4] = (sprite_byte & 0x08) >> 3;
+    pixels[5] = (sprite_byte & 0x04) >> 2;
+    pixels[6] = (sprite_byte & 0x02) >> 1;
+    pixels[7] = (sprite_byte & 0x01);
+    
+    // plonk them into video memory
+    cpu->screen[x_coord+0][y_coord+i] ^= pixels[0];
+    cpu->screen[x_coord+1][y_coord+i] ^= pixels[1];
+    cpu->screen[x_coord+2][y_coord+i] ^= pixels[2];
+    cpu->screen[x_coord+3][y_coord+i] ^= pixels[3];
+    cpu->screen[x_coord+4][y_coord+i] ^= pixels[4];
+    cpu->screen[x_coord+5][y_coord+i] ^= pixels[5];
+    cpu->screen[x_coord+6][y_coord+i] ^= pixels[6];
+    cpu->screen[x_coord+7][y_coord+i] ^= pixels[7];
+    
+    // first check if the register is unset - otherwise we waste a lot of time
+    // making pointless comparisons (it can't really be set twice!)
+    if( cpu->registers[0xF] == 0 && (
+        cpu->screen[x_coord+0][y_coord+i] == 0 ||
+        cpu->screen[x_coord+1][y_coord+i] == 0 ||
+        cpu->screen[x_coord+2][y_coord+i] == 0 ||
+        cpu->screen[x_coord+3][y_coord+i] == 0 ||
+        cpu->screen[x_coord+4][y_coord+i] == 0 ||
+        cpu->screen[x_coord+5][y_coord+i] == 0 ||
+        cpu->screen[x_coord+6][y_coord+i] == 0 ||
+        cpu->screen[x_coord+7][y_coord+i] == 0))
+    {
+        cpu->registers[0xF] = 1;
+    }
+  }
+  
   cpu->pc += 2;
 }
 void skp(cpu_t* cpu,uint16_t current_opcode)
