@@ -17,7 +17,29 @@ const uint16_t interpreter[512] = {
   // three:
   0xF0,0x10,0xF0,0x10,0xF0,
   // four:
-  
+  0x90,0x90,0xF0,0x10,0x10,
+  // five:
+  0xF0,0x80,0xF0,0x10,0xF0,
+  // six:
+  0xF0,0x80,0xF0,0x90,0xF0,
+  // seven:
+  0xF0,0x10,0x20,0x40,0x40,
+  // eight:
+  0xF0,0x90,0xF0,0x90,0xF0,
+  // nine:
+  0xF0,0x90,0xF0,0x10,0xF0,
+  // A:
+  0xF0,0x90,0xF0,0x90,0x90,
+  // B:
+  0xE0,0x90,0xE0,0x90,0xE0,
+  // C:
+  0xF0,0x80,0x80,0x80,0xF0,
+  // D:
+  0xE0,0x90,0x90,0x90,0xE0,
+  // E:
+  0xF0,0x80,0xF0,0x80,0xF0,
+  // F:
+  0xF0,0x80,0xF0,0x80,0x80
   };
 
 void cpu_run(cpu_t* cpu)
@@ -29,13 +51,16 @@ void cpu_run(cpu_t* cpu)
   srand(prev->tv_usec);
   while(cpu->errno == ENONE)
   {
-    // dump_state(*cpu);
+    #ifdef DEBUG_MODE
+    dump_state(*cpu);
+    #else
     if(cpu->draw)
     {
       flip(cpu->screen,frameno);
       cpu->draw = 0;
       sleep(1);
     }
+    #endif
     step(cpu);
     frameno++;
     gettimeofday(cur,NULL);
@@ -47,14 +72,17 @@ void cpu_run(cpu_t* cpu)
       gettimeofday(prev,NULL);
     }
     // pause for input
-    //getchar();
+    #ifdef DEBUG_MODE
+    getchar();
+    #endif
   }
   dump_state(*cpu);
 }
 
-void flip(uint8_t screen[64][32],unsigned int frameno)
+void flip(uint8_t screen[32][64],unsigned int frameno)
 {
   int x = 0,y = 0;
+  printf("/==============================================================\\\n");
   while(y < 32)
   {
     if(screen[x][y] & 0x1)
@@ -62,13 +90,15 @@ void flip(uint8_t screen[64][32],unsigned int frameno)
     else
       putchar(' ');
     x++;
-    if(x == 32)
+    if(x == 64)
     {
+      putchar('|');
       putchar('\n');
       x = 0;
       y++;
     }
   }
+  printf("\\==============================================================/\n");
   printf("Frame number: %d\n",frameno);
 }
 
@@ -76,6 +106,8 @@ void cpu_load(FILE* from,cpu_t* cpu)
 {
   uint8_t* load_into = &(cpu->memory[0x200]);
   fread(load_into,sizeof(uint8_t),(0x1000-0x200),from);
+  // set the interpreter memory
+  memcpy(cpu->memory,interpreter,512);
   // heap_dump(*cpu);
   cpu->pc = 0x200; // start at the beginning, of course
   // set the delay to 0xFF

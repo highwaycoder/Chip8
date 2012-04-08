@@ -27,7 +27,7 @@ typedef struct {
   uint8_t* memory;
   uint8_t errno;
   uint16_t address;
-  uint8_t screen[64][32];
+  uint8_t screen[32][64];
   uint8_t draw;
   uint8_t keypad[16];
 } cpu_t;
@@ -40,6 +40,6 @@ void stack_trace(cpu_t cpu);
 void step(cpu_t* cpu);
 void cpu_load(FILE* from,cpu_t* cpu);
 void cpu_run(cpu_t* cpu);
-void flip(uint8_t screen[64][32],unsigned int frameno);
+void flip(uint8_t screen[32][64],unsigned int frameno);
 
 #endif
