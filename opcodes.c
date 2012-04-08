@@ -145,24 +145,20 @@ void ld(cpu_t* cpu,uint16_t current_opcode)
 
 void add(cpu_t* cpu,uint16_t current_opcode)
 {
-  uint16_t first_arg=0,second_arg=0;
+  uint8_t cache;
   if((current_opcode & 0xF000) == 0x7000)
   {
     cpu->registers[(current_opcode & 0x0F00) >> 8] += (current_opcode & 0x00FF);
   }
   else if((current_opcode & 0xF00F) == 0x8004)
   {
-    first_arg = cpu->registers[(current_opcode & 0x0F00) >> 8];
-    second_arg = cpu->registers[(current_opcode & 0x00F0) >> 4];
-    if(first_arg + second_arg > 255)
-    {
-      cpu->registers[0xF] = 1;
-    }
+    cache = cpu->registers[(current_opcode & 0x0F00) >> 8];
+    cpu->registers[(current_opcode & 0x0F00) >> 8] += cpu->registers[(current_opcode & 0x00F0) >> 4];
+    if(cpu->registers[(current_opcode & 0x0F00) >> 8] > cpu->registers[(current_opcode & 0x00F0)] ||
+       cpu->registers[(current_opcode & 0x0F00) >> 8] > cache)
+       cpu->registers[0xF] = 1;
     else
-    {
-      cpu->registers[0xF] = 0;
-    }
-    cpu->registers[(current_opcode & 0x0F00) >> 8] = (uint8_t)(first_arg + second_arg);
+       cpu->registers[0xF] = 0;
   }
   else if((current_opcode & 0xF0FF) == 0xF01E)
   {
