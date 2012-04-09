@@ -247,9 +247,9 @@ void drw(cpu_t* cpu,uint16_t current_opcode)
   // no collision yet
   cpu->registers[0xF] = 0x0;
   
-  if(x_coord >= 64 || y_coord + num_bytes >= 32)
+  if(x_coord >= 64 || y_coord + (num_bytes-1) >= 32)
   {
-      fprintf(stderr,"Tried to draw outside the screen at (%d,%d - %d)\n",x_coord,y_coord,y_coord+num_bytes);
+      fprintf(stderr,"Tried to draw outside the screen at (%d,%d - %d)\n",x_coord,y_coord,y_coord+(num_bytes-1));
       return;
   }
   
