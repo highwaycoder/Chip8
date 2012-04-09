@@ -281,6 +281,7 @@ void drw(cpu_t* cpu,uint16_t current_opcode)
         cpu->registers[0xF] = 1;
     }
     
+    // XOR them into video memory being careful not to overrun video memory
     if(x_coord+7 < 64)
     {
       cpu->screen[x_coord+0][y_coord+i] ^= pixels[0];
@@ -292,11 +293,12 @@ void drw(cpu_t* cpu,uint16_t current_opcode)
       cpu->screen[x_coord+6][y_coord+i] ^= pixels[6];
       cpu->screen[x_coord+7][y_coord+i] ^= pixels[7];
     }
-    
-    // XOR them into video memory being careful not to overrun video memory
-    for(x_offset = 0;x_offset < ((x_coord+7 < 64) ? x_coord : 64 - x_coord);x_offset++)
+    else
     {
-      cpu->screen[x_coord+x_offset][y_coord+i] ^= pixels[0];
+      for(x_offset = 0;x_offset < (64 - x_coord);x_offset++)
+      {
+        cpu->screen[x_coord+x_offset][y_coord+i] ^= pixels[0];
+      }
     }
   }
   cpu->draw = 1;
