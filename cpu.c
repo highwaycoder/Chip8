@@ -82,6 +82,8 @@ void cpu_run(cpu_t* cpu)
     #endif
   }
   dump_state(*cpu);
+  free(cur);
+  free(prev);
 }
 
 void flip(uint8_t screen[64][32],unsigned int frameno)
@@ -290,6 +292,8 @@ void dump_state(cpu_t cpu)
 void heap_dump(cpu_t cpu)
 {
   FILE* logfile = fopen("core.dmp","w");
+  if(logfile == NULL)
+    return;
   fwrite(cpu.memory,1,0x1000,logfile);
   /* -- non-binary version --
   fprintf(logfile,"Memory: \n");
@@ -299,6 +303,7 @@ void heap_dump(cpu_t cpu)
     if(!(i % 5)) fputc('\n',logfile);
   }
   */
+  fclose(logfile);
 }
 
 void stack_trace(cpu_t cpu)

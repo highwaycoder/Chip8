@@ -33,6 +33,7 @@ int main(int argc, char** argv)
   {
     cpu_load(infile,cpu);
     cpu_run(cpu);
+    fclose(infile);
   }
   free_cpu(cpu);
   return rv;
