@@ -1,5 +1,5 @@
 CC=gcc
-CFLAGS=-Wall -Wextra -std=gnu99 -pedantic -g
+CFLAGS=-Wall -Wextra -std=gnu99 -pedantic -g -fbounds-check
 LDFLAGS=
 PROGNAME=chip8
 
