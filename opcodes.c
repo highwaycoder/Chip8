@@ -21,6 +21,7 @@ void sys(cpu_t* cpu,uint16_t current_opcode)
       }
       cpu->pc = cpu->stack[cpu->stack_pointer];
       cpu->stack_pointer--;
+      cpu->pc += 2; // expected to move past the CALL opcode
       break;
     default:
       // default behaviour is to ignore these opcodes
