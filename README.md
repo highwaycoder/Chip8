@@ -7,8 +7,8 @@ Is an emulator written in C for the Chip8 device.
    watch out for this.  I plan to implement a signal handler that cleans up
    carefully on interrupt, as otherwise the program doesn't really ever clean
    up after itself since interrupting is pretty much necessary.
+ - Display works (hopefully: please report bugs!)
  - Keyboard input is disabled
- - Display is disabled
  - Sound is disabled
 
 ## Features
