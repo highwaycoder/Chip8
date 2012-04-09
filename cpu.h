@@ -24,12 +24,12 @@ typedef struct {
   uint8_t stack_pointer;
   uint16_t pc;
   uint16_t stack[16];
-  uint8_t* memory;
   uint8_t errno;
   uint16_t address;
   uint8_t screen[32][64];
   uint8_t draw;
   uint8_t keypad[16];
+  uint8_t* memory;
 } cpu_t;
 
 void dump_state(cpu_t cpu);

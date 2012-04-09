@@ -9,50 +9,53 @@
 
 const uint16_t interpreter[512] = {
   // zero:
-  0xF0,0x90,0x90,0x90,0xF0,
+  0x90F0,0x9090,0x00F0,
   // one:
-  0x20,0x60,0x20,0x20,0x70,
+  0x6020,0x2020,0x0070,
   // two:
-  0xF0,0x10,0xF0,0x80,0xF0,
+  0x10F0,0x80F0,0x00F0,
   // three:
-  0xF0,0x10,0xF0,0x10,0xF0,
+  0x10F0,0x10F0,0x00F0,
   // four:
-  0x90,0x90,0xF0,0x10,0x10,
+  0x9090,0x10F0,0x0010,
   // five:
-  0xF0,0x80,0xF0,0x10,0xF0,
+  0x80F0,0x10F0,0x00F0,
   // six:
-  0xF0,0x80,0xF0,0x90,0xF0,
+  0x80F0,0x90F0,0x00F0,
   // seven:
-  0xF0,0x10,0x20,0x40,0x40,
+  0x10F0,0x4020,0x0040,
   // eight:
-  0xF0,0x90,0xF0,0x90,0xF0,
+  0x90F0,0x90F0,0x00F0,
   // nine:
-  0xF0,0x90,0xF0,0x10,0xF0,
+  0x90F0,0x10F0,0x00F0,
   // A:
-  0xF0,0x90,0xF0,0x90,0x90,
+  0x90F0,0x90F0,0x0090,
   // B:
-  0xE0,0x90,0xE0,0x90,0xE0,
+  0x90E0,0x90E0,0x00E0,
   // C:
-  0xF0,0x80,0x80,0x80,0xF0,
+  0x80F0,0x8080,0x00F0,
   // D:
-  0xE0,0x90,0x90,0x90,0xE0,
+  0x90E0,0x9090,0x00E0,
   // E:
-  0xF0,0x80,0xF0,0x80,0xF0,
+  0x80F0,0x80F0,0x00F0,
   // F:
-  0xF0,0x80,0xF0,0x80,0x80
+  0x80F0,0x80F0,0x0080
   };
 
 void cpu_run(cpu_t* cpu)
 {
   struct timeval* prev = malloc(sizeof(struct timeval));
   struct timeval* cur = malloc(sizeof(struct timeval));
-  unsigned int frameno;
+  unsigned int frameno = 0;
+  unsigned int decrease_by = 0;
   gettimeofday(prev,NULL);
   srand(prev->tv_usec);
   while(cpu->errno == ENONE)
   {
     #ifdef DEBUG_MODE
     dump_state(*cpu);
+    // don't forget to reset this
+    if(cpu->draw) cpu->draw = 0;
     #else
     if(cpu->draw)
     {
@@ -66,9 +69,11 @@ void cpu_run(cpu_t* cpu)
     gettimeofday(cur,NULL);
     if((cur->tv_usec - prev->tv_usec) >= 17)
     {
-      cpu->delay -= (cur->tv_usec - prev->tv_usec) / 17;
+      decrease_by = (cur->tv_usec - prev->tv_usec) / 17;
+      if(cpu->delay > 0) 
+        cpu->delay -= (decrease_by > cpu->delay) ? cpu->delay : decrease_by;
       if(cpu->sound > 0)
-        cpu->sound -= (cur->tv_usec - prev->tv_usec) / 17;
+        cpu->sound -= (decrease_by > cpu->sound) ? cpu->sound : decrease_by;
       gettimeofday(prev,NULL);
     }
     // pause for input
@@ -111,7 +116,7 @@ void cpu_load(FILE* from,cpu_t* cpu)
   // heap_dump(*cpu);
   cpu->pc = 0x200; // start at the beginning, of course
   // set the delay to 0xFF
-  cpu->delay = 0xFF;
+  cpu->delay = 0x00;
   // buzzer off to start with
   cpu->sound = 0x00;
   // set all the registers to 0
@@ -277,7 +282,7 @@ void dump_state(cpu_t cpu)
   printf("Program Counter: %.4X\n",cpu.pc);
   printf("Error number: %.2X\n",cpu.errno);
   printf("Draw next frame: %s\n",cpu.draw ? "yes" : "no");
-  printf("Current opcode: %.4X\n",(cpu.memory[cpu.pc]<<8) | cpu.memory[cpu.pc+1]);
+  printf("Next opcode: %.4X\n",(cpu.memory[cpu.pc]<<8) | cpu.memory[cpu.pc+1]);
   stack_trace(cpu);
   heap_dump(cpu);
 }

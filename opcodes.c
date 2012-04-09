@@ -11,6 +11,7 @@ void sys(cpu_t* cpu,uint16_t current_opcode)
   {
     case 0xE0:
       memset(cpu->screen,0,(64 * 32));
+      cpu->pc += 2;
       break;
     case 0xEE:
       if(cpu->stack_pointer == 0)
@@ -23,9 +24,9 @@ void sys(cpu_t* cpu,uint16_t current_opcode)
       break;
     default:
       // default behaviour is to ignore these opcodes
+      cpu->pc += 2;
       break;
   }
-  cpu->pc += 2;
 }
 
 void jmp(cpu_t* cpu,uint16_t current_opcode)
@@ -40,7 +41,7 @@ void call(cpu_t* cpu,uint16_t current_opcode)
 {
   cpu->stack_pointer++;
   cpu->stack[cpu->stack_pointer] = cpu->pc;
-  cpu->pc = current_opcode & 0x0FFF;
+  cpu->pc = (current_opcode & 0x0FFF);
 }
 
 void se(cpu_t* cpu,uint16_t current_opcode)
@@ -108,7 +109,7 @@ void ld(cpu_t* cpu,uint16_t current_opcode)
       case 0x33:
         cpu->memory[cpu->address] = ((current_opcode & 0x0F00) >> 8) / 100;
         cpu->memory[cpu->address+1] = (((current_opcode & 0x0F00) >> 8)/10)%10;
-        cpu->memory[cpu->address+2] = (((current_opcode & 0x0F00) >> 8)%100)%10;
+        cpu->memory[cpu->address+2] = ((current_opcode & 0x0F00) >> 8)%10;
         break;
       case 0x55:
         for(i=0;i<((current_opcode & 0x0F00)>>8);i++)
@@ -234,7 +235,7 @@ void rnd(cpu_t* cpu,uint16_t current_opcode)
 
 void drw(cpu_t* cpu,uint16_t current_opcode)
 {
-  uint8_t num_bytes = (uint8_t)(current_opcode);
+  uint8_t num_bytes = (uint8_t)(current_opcode & 0x000F);
   uint8_t x_coord = cpu->registers[(current_opcode & 0x0F00) >> 8];
   uint8_t y_coord = cpu->registers[(current_opcode & 0x00F0) >> 4];
   uint8_t sprite_byte;
@@ -303,7 +304,7 @@ void sknp(cpu_t* cpu,uint16_t current_opcode)
 // helper functions
 uint16_t get_sprite_loc(uint8_t sprite)
 {
-  return sprite * 5; // sprites are at 5-byte offsets, handily
+  return sprite * 6; // sprites are at 10-byte offsets, handily
 }
 
 uint8_t get_random_byte(void)
