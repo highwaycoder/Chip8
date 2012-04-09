@@ -240,10 +240,17 @@ void drw(cpu_t* cpu,uint16_t current_opcode)
   uint8_t y_coord = cpu->registers[(current_opcode & 0x00F0) >> 4];
   uint8_t sprite_byte;
   uint8_t pixels[8] = {0};
+  unsigned int x_offset = 0;
   unsigned int i = 0;
   
   // no collision yet
   cpu->registers[0xF] = 0x0;
+  
+  if(x_coord >= 64 || y_coord + num_bytes >= 32)
+  {
+      fprintf(stderr,"Tried to draw outside the screen at (%d,%d - %d)\n",x_coord,y_coord,y_coord+num_bytes);
+      return;
+  }
   
   for(i=0;i<num_bytes;i++)
   {
@@ -274,16 +281,23 @@ void drw(cpu_t* cpu,uint16_t current_opcode)
         cpu->registers[0xF] = 1;
     }
     
-    // XOR them into video memory
-    cpu->screen[x_coord+0][y_coord+i] ^= pixels[0];
-    cpu->screen[x_coord+1][y_coord+i] ^= pixels[1];
-    cpu->screen[x_coord+2][y_coord+i] ^= pixels[2];
-    cpu->screen[x_coord+3][y_coord+i] ^= pixels[3];
-    cpu->screen[x_coord+4][y_coord+i] ^= pixels[4];
-    cpu->screen[x_coord+5][y_coord+i] ^= pixels[5];
-    cpu->screen[x_coord+6][y_coord+i] ^= pixels[6];
-    cpu->screen[x_coord+7][y_coord+i] ^= pixels[7];
+    if(x_coord+7 < 64)
+    {
+      cpu->screen[x_coord+0][y_coord+i] ^= pixels[0];
+      cpu->screen[x_coord+1][y_coord+i] ^= pixels[1];
+      cpu->screen[x_coord+2][y_coord+i] ^= pixels[2];
+      cpu->screen[x_coord+3][y_coord+i] ^= pixels[3];
+      cpu->screen[x_coord+4][y_coord+i] ^= pixels[4];
+      cpu->screen[x_coord+5][y_coord+i] ^= pixels[5];
+      cpu->screen[x_coord+6][y_coord+i] ^= pixels[6];
+      cpu->screen[x_coord+7][y_coord+i] ^= pixels[7];
+    }
     
+    // XOR them into video memory being careful not to overrun video memory
+    for(x_offset = 0;x_offset < ((x_coord+7 < 64) ? x_coord : 64 - x_coord);x_offset++)
+    {
+      cpu->screen[x_coord+x_offset][y_coord+i] ^= pixels[0];
+    }
   }
   cpu->draw = 1;
   cpu->pc += 2;

@@ -84,7 +84,7 @@ void cpu_run(cpu_t* cpu)
   dump_state(*cpu);
 }
 
-void flip(uint8_t screen[32][64],unsigned int frameno)
+void flip(uint8_t screen[64][32],unsigned int frameno)
 {
   int x = 0,y = 0;
   printf("/==============================================================\\\n");
