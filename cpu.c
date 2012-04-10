@@ -78,7 +78,7 @@ void cpu_run(cpu_t* cpu)
     }
     // pause for input
     #ifdef DEBUG_MODE
-    // getchar();
+    getchar();
     #endif
   }
   dump_state(*cpu);

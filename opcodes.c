@@ -257,7 +257,6 @@ void drw(cpu_t* cpu,uint16_t current_opcode)
   uint8_t y_coord = cpu->registers[(current_opcode & 0x00F0) >> 4];
   uint8_t sprite_byte;
   uint8_t pixels[8] = {0};
-  unsigned int x_offset = 0;
   unsigned int i = 0;
   
   // no collision yet
@@ -284,47 +283,29 @@ void drw(cpu_t* cpu,uint16_t current_opcode)
     
     
     
-    // XOR them into video memory being careful not to overrun video memory
-    if(x_coord+7 < 64)
-    {
-      cpu->screen[x_coord+0][y_coord+i] ^= pixels[0];
-      cpu->screen[x_coord+1][y_coord+i] ^= pixels[1];
-      cpu->screen[x_coord+2][y_coord+i] ^= pixels[2];
-      cpu->screen[x_coord+3][y_coord+i] ^= pixels[3];
-      cpu->screen[x_coord+4][y_coord+i] ^= pixels[4];
-      cpu->screen[x_coord+5][y_coord+i] ^= pixels[5];
-      cpu->screen[x_coord+6][y_coord+i] ^= pixels[6];
-      cpu->screen[x_coord+7][y_coord+i] ^= pixels[7];
-      // first check if the register is unset - otherwise we waste a lot of time
+    // XOR them into video memory, wrapping round if it's too big
+    cpu->screen[(x_coord+0) % 64][(y_coord+i) % 32] ^= pixels[0];
+    cpu->screen[(x_coord+1) % 64][(y_coord+i) % 32] ^= pixels[1];
+    cpu->screen[(x_coord+2) % 64][(y_coord+i) % 32] ^= pixels[2];
+    cpu->screen[(x_coord+3) % 64][(y_coord+i) % 32] ^= pixels[3];
+    cpu->screen[(x_coord+4) % 64][(y_coord+i) % 32] ^= pixels[4];
+    cpu->screen[(x_coord+5) % 64][(y_coord+i) % 32] ^= pixels[5];
+    cpu->screen[(x_coord+6) % 64][(y_coord+i) % 32] ^= pixels[6];
+    cpu->screen[(x_coord+7) % 64][(y_coord+i) % 32] ^= pixels[7];
+    // first check if the register is unset - otherwise we waste a lot of time
       // making pointless comparisons (it can't really be set twice!)
-      if( cpu->registers[0xF] == 0 && (
+    if( cpu->registers[0xF] == 0 && (
       // if the old pixel was set
-          cpu->screen[x_coord+0][y_coord+i] & 0x1 ||
-          cpu->screen[x_coord+1][y_coord+i] & 0x1 ||
-          cpu->screen[x_coord+2][y_coord+i] & 0x1 ||
-          cpu->screen[x_coord+3][y_coord+i] & 0x1 ||
-          cpu->screen[x_coord+4][y_coord+i] & 0x1 ||
-          cpu->screen[x_coord+5][y_coord+i] & 0x1 ||
-          cpu->screen[x_coord+6][y_coord+i] & 0x1 ||
-          cpu->screen[x_coord+7][y_coord+i] & 0x1))
-      {
-          cpu->registers[0xF] = 1;
-      }
-    }
-    else
+      cpu->screen[(x_coord+0) % 64][(y_coord+i) % 32] & 0x1 ||
+      cpu->screen[(x_coord+1) % 64][(y_coord+i) % 32] & 0x1 ||
+      cpu->screen[(x_coord+2) % 64][(y_coord+i) % 32] & 0x1 ||
+      cpu->screen[(x_coord+3) % 64][(y_coord+i) % 32] & 0x1 ||
+      cpu->screen[(x_coord+4) % 64][(y_coord+i) % 32] & 0x1 ||
+      cpu->screen[(x_coord+5) % 64][(y_coord+i) % 32] & 0x1 ||
+      cpu->screen[(x_coord+6) % 64][(y_coord+i) % 32] & 0x1 ||
+      cpu->screen[(x_coord+7) % 64][(y_coord+i) % 32] & 0x1))
     {
-      for(x_offset = 0;x_offset < (64 - x_coord);x_offset++)
-      {
-        cpu->screen[x_coord+x_offset][y_coord+i] ^= pixels[0];
-        // first check if the register is unset - otherwise we waste a lot of time
-        // making pointless comparisons (it can't really be set twice!)
-        if( cpu->registers[0xF] == 0 && (
-        // if the old pixel was set
-            cpu->screen[x_coord+x_offset][y_coord+i] & 0x1))
-        {
-            cpu->registers[0xF] = 1;
-        }
-      }
+        cpu->registers[0xF] = 1;
     }
   }
   cpu->draw = 1;
