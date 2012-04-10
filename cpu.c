@@ -60,7 +60,7 @@ void cpu_run(cpu_t* cpu)
     {
       flip(cpu->screen,frameno);
       cpu->draw = 0;
-      sleep(1);
+      //sleep(1);
     }
     #endif
     step(cpu);
@@ -74,7 +74,8 @@ void cpu_run(cpu_t* cpu)
     
     // pause for input
     #ifdef DEBUG_MODE
-    getchar();
+    
+    //getchar();
     #endif
   }
   dump_state(*cpu);

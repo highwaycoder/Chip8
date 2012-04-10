@@ -15,6 +15,8 @@ enum ERRORS {
   EBDOP = 0x5,
   // not implemented
   ENIMP = 0x6,
+  // segmentation fault
+  ESEGV = 0x7,
 };
 
 typedef struct {

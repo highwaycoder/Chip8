@@ -110,12 +110,16 @@ void ld(cpu_t* cpu,uint16_t current_opcode)
         cpu->sound = cpu->registers[(current_opcode & 0x0F00) >> 8];
         break;
       case 0x29:
-        cpu->address = get_sprite_loc(cpu->registers[(current_opcode & 0x0F00) >> 8]);
+        if(get_sprite_loc(cpu->registers[(current_opcode & 0x0F00) >> 8] & 0xF) < 0x200)
+          cpu->address = get_sprite_loc(cpu->registers[(current_opcode & 0x0F00) >> 8] & 0xF);
+        else
+          cpu->errno = ESEGV;
         break;
       case 0x33:
         cpu->memory[cpu->address] = ((current_opcode & 0x0F00) >> 8) / 100;
         cpu->memory[cpu->address+1] = (((current_opcode & 0x0F00) >> 8)/10)%10;
         cpu->memory[cpu->address+2] = ((current_opcode & 0x0F00) >> 8)%10;
+        cpu->address += 2;
         break;
       case 0x55:
         for(i=0;i<((current_opcode & 0x0F00)>>8);i++)
@@ -328,7 +332,7 @@ void sknp(cpu_t* cpu,uint16_t current_opcode)
 // helper functions
 uint16_t get_sprite_loc(uint8_t sprite)
 {
-  return sprite * 6; // sprites are at 10-byte offsets, handily
+  return (sprite & 0xF) * 6; // sprites are at 10-byte offsets, handily
 }
 
 uint8_t get_random_byte(void)
