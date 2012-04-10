@@ -7,6 +7,11 @@
 
 void sys(cpu_t* cpu,uint16_t current_opcode)
 {
+  if((current_opcode & 0xF0) == 0xC0)
+  {
+    cpu->errno = ENIMP;
+    return;
+  }
   switch(current_opcode & 0xFF)
   {
     case 0xE0:
@@ -167,7 +172,17 @@ void add(cpu_t* cpu,uint16_t current_opcode)
   }
   else if((current_opcode & 0xF0FF) == 0xF01E)
   {
-    cpu->address += cpu->registers[(current_opcode & 0x0F00) >> 8];
+    if((cpu->address + cpu->registers[(current_opcode & 0x0F00) >> 8]) > 0xFFF)
+    {
+      cpu->registers[0xF] = 1;
+      cpu->address = 0xFFF;
+    }
+    else
+    {
+      cpu->registers[0xF] = 0;
+      cpu->address += cpu->registers[(current_opcode & 0x0F00) >> 8];
+    }
+    
   }
   else
   {
