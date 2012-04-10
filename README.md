@@ -7,9 +7,9 @@ Is an emulator written in C for the Chip8 device.
    watch out for this.  I plan to implement a signal handler that cleans up
    carefully on interrupt, as otherwise the program doesn't really ever clean
    up after itself since interrupting is pretty much necessary.
- - Display works (hopefully: please report bugs!)
  - Keyboard input is disabled
  - Sound is disabled
 
 ## Features
- - Supports all opcodes from the Chip8 instruction set to the best of my knowledge, bar DRW, SKP and SKPN.  Those are planned for a later release.
+ - Supports all opcodes from the Chip8 instruction set to the best of my knowledge.
+ - Display works (hopefully: please report bugs!)
