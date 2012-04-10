@@ -47,7 +47,6 @@ void cpu_run(cpu_t* cpu)
   struct timeval* prev = malloc(sizeof(struct timeval));
   struct timeval* cur = malloc(sizeof(struct timeval));
   unsigned int frameno = 0;
-  unsigned int decrease_by = 0;
   gettimeofday(prev,NULL);
   srand(prev->tv_usec);
   while(cpu->errno == ENONE)
@@ -67,15 +66,12 @@ void cpu_run(cpu_t* cpu)
     step(cpu);
     frameno++;
     gettimeofday(cur,NULL);
-    if((cur->tv_usec - prev->tv_usec) >= 17)
-    {
-      decrease_by = (cur->tv_usec - prev->tv_usec) / 17;
-      if(cpu->delay > 0) 
-        cpu->delay -= (decrease_by > cpu->delay) ? cpu->delay : decrease_by;
-      if(cpu->sound > 0)
-        cpu->sound -= (decrease_by > cpu->sound) ? cpu->sound : decrease_by;
-      gettimeofday(prev,NULL);
-    }
+    
+    if(cpu->delay > 0)
+      cpu->delay--;
+    if(cpu->sound > 0)
+      cpu->sound--;
+    
     // pause for input
     #ifdef DEBUG_MODE
     getchar();
