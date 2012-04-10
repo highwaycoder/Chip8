@@ -122,12 +122,14 @@ void ld(cpu_t* cpu,uint16_t current_opcode)
         {
           cpu->memory[cpu->address+i] = cpu->registers[i];
         }
+        cpu->address += ((current_opcode & 0x0F00)>>8)+1;
         break;
       case 0x65:
         for(i=0;i<((current_opcode & 0x0F00)>>8);i++)
         {
           cpu->registers[i] = cpu->memory[cpu->address+i];
         }
+        cpu->address += ((current_opcode & 0x0F00)>>8)+1;
         break;
       default:
         cpu->errno = EBDOP;
@@ -182,7 +184,6 @@ void add(cpu_t* cpu,uint16_t current_opcode)
       cpu->registers[0xF] = 0;
       cpu->address += cpu->registers[(current_opcode & 0x0F00) >> 8];
     }
-    
   }
   else
   {
