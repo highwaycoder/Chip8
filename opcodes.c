@@ -121,10 +121,9 @@ void ld(cpu_t* cpu,uint16_t current_opcode)
           cpu->errno = ESEGV;
         break;
       case 0x33:
-        cpu->memory[cpu->address] = ((current_opcode & 0x0F00) >> 8) / 100;
-        cpu->memory[cpu->address+1] = (((current_opcode & 0x0F00) >> 8)/10)%10;
-        cpu->memory[cpu->address+2] = ((current_opcode & 0x0F00) >> 8)%10;
-        cpu->address += 2;
+        cpu->memory[cpu->address] = cpu->registers[((current_opcode & 0x0F00) >> 8)] / 100;
+        cpu->memory[cpu->address+1] = (cpu->registers[((current_opcode & 0x0F00) >> 8)] / 10) % 10;
+        cpu->memory[cpu->address+2] = cpu->registers[((current_opcode & 0x0F00) >> 8)] % 10;
         break;
       case 0x55:
         for(i=0;i<((current_opcode & 0x0F00)>>8);i++)

@@ -60,7 +60,7 @@ void cpu_run(cpu_t* cpu)
     {
       flip(cpu->screen,frameno);
       cpu->draw = 0;
-      sleep(1);
+      usleep(500);
     }
     #endif
     step(cpu);
