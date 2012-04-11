@@ -51,40 +51,46 @@ void call(cpu_t* cpu,uint16_t current_opcode)
 
 void se(cpu_t* cpu,uint16_t current_opcode)
 {
-  switch((current_opcode & 0xF000) >> 12)
+  switch(current_opcode & 0xF000)
   {
-    case 0x3:
+    case 0x3000:
       if(cpu->registers[(current_opcode & 0x0F00) >> 8] == (current_opcode & 0x00FF))
         cpu->pc += 4;
+      else
+        cpu->pc += 2;
       break;
-    case 0x5:
+    case 0x5000:
       if(cpu->registers[(current_opcode & 0x0F00) >> 8] == cpu->registers[(current_opcode & 0x00F0) >> 4])
         cpu->pc += 4;
+      else
+        cpu->pc += 2;
       break;
     default:
       cpu->errno = EBDOP;
       break;
   }
-  cpu->pc += 2;
 }
 
 void sne(cpu_t* cpu,uint16_t current_opcode)
 {
-  switch((current_opcode & 0xF000) >> 12)
+  switch((current_opcode & 0xF000))
   {
-    case 0x4:
+    case 0x4000:
       if(cpu->registers[(current_opcode & 0x0F00) >> 8] != (current_opcode & 0x00FF))
         cpu->pc += 4;
+      else
+        cpu->pc += 2;
       break;
-    case 0x9:
+    case 0x9000:
       if(cpu->registers[(current_opcode & 0x0F00) >> 8] != cpu->registers[(current_opcode & 0x00F0) >> 4])
         cpu->pc += 4;
+      else
+        cpu->pc += 2;
       break;
     default:
       cpu->errno = EBDOP;
       break;
   }
-  cpu->pc += 2;
 }
 
 void ld(cpu_t* cpu,uint16_t current_opcode)
