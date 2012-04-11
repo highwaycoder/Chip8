@@ -29,8 +29,7 @@ void sys(cpu_t* cpu,uint16_t current_opcode)
       cpu->pc += 2; // expected to move past the CALL opcode
       break;
     default:
-      // default behaviour is to ignore these opcodes
-      cpu->pc += 2;
+      cpu->errno = EBDOP;
       break;
   }
 }
@@ -40,7 +39,7 @@ void jmp(cpu_t* cpu,uint16_t current_opcode)
   if((current_opcode & 0xF000) == 0x1000)
     cpu->pc = (current_opcode & 0x0FFF);
   else if((current_opcode & 0xF000) == 0xB000)
-    cpu->pc = (current_opcode & 0x00FF) + cpu->registers[(current_opcode & 0x0F00) >> 8];
+    cpu->pc = (current_opcode & 0x0FFF) + cpu->registers[0x0];
 }
 
 void call(cpu_t* cpu,uint16_t current_opcode)
