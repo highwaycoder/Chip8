@@ -4,6 +4,7 @@
 #include <stdint.h>
 #include <sys/time.h>
 #include <unistd.h>
+#include <signal.h>
 #include "opcodes.h"
 #include "cpu.h"
 
@@ -41,6 +42,8 @@ const uint16_t interpreter[512] = {
   // F:
   0x80F0,0x80F0,0x0080
   };
+  
+void ignore_signal(int signum) {}
 
 void cpu_run(cpu_t* cpu)
 {
@@ -49,11 +52,22 @@ void cpu_run(cpu_t* cpu)
   unsigned int frameno = 0;
   gettimeofday(prev,NULL);
   srand(prev->tv_usec);
+  
+  // block the SIGINT signal so we can use it to interrupt the cpu
+  struct sigaction ignore;
+  ignore.sa_handler = ignore_signal;
+  sigaction(SIGINT,&ignore,NULL);
+  
+  sigset_t signals_to_block;
+  sigemptyset(&signals_to_block);
+  sigaddset(&signals_to_block,SIGINT);
+  sigprocmask(SIG_SETMASK,&signals_to_block,NULL);
+  
   while(cpu->errno == ENONE)
   {
     #ifdef DEBUG_MODE
     dump_state(*cpu);
-    // don't forget to reset this
+    // don't forget to reset this, even in debug mode!
     if(cpu->draw) cpu->draw = 0;
     #else
     if(cpu->draw)
@@ -77,6 +91,11 @@ void cpu_run(cpu_t* cpu)
     
     //getchar();
     #endif
+    
+    // poll for SIGINT, break on sigint
+    sigset_t signal_set;
+    sigpending(&signal_set);
+    if(sigismember(&signal_set,SIGINT)) break;
   }
   dump_state(*cpu);
   free(cur);
