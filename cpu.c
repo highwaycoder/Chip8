@@ -6,9 +6,9 @@
 #include <unistd.h>
 #include <signal.h>
 #include <SDL/SDL.h>
-#include "sdl.h"
 #include "opcodes.h"
 #include "cpu.h"
+#include "sdl.h"
 
 const uint16_t interpreter[512] = {
   // zero:
@@ -65,7 +65,7 @@ void cpu_run(cpu_t* cpu,SDL_Surface* screen)
   sigaddset(&signals_to_block,SIGINT);
   sigprocmask(SIG_SETMASK,&signals_to_block,NULL);
   
-  while(cpu->errno == ENONE)
+  do
   {
     #ifdef DEBUG_MODE
     dump_state(*cpu);
@@ -74,9 +74,10 @@ void cpu_run(cpu_t* cpu,SDL_Surface* screen)
     #else
     if(cpu->draw)
     {
+      sdl_handle_events(cpu);
       sdl_flip(screen,cpu->screen,frameno);
       cpu->draw = 0;
-      usleep(500);
+      usleep(5000);
     }
     #endif
     step(cpu);
@@ -91,14 +92,16 @@ void cpu_run(cpu_t* cpu,SDL_Surface* screen)
     // pause for input
     #ifdef DEBUG_MODE
     
-    //getchar();
+    getchar();
     #endif
     
     // poll for SIGINT, break on sigint
     sigset_t signal_set;
     sigpending(&signal_set);
-    if(sigismember(&signal_set,SIGINT)) break;
-  }
+    if(sigismember(&signal_set,SIGINT)) {
+        cpu->errno = EUSRQ;
+    }
+  }while(cpu->errno == ENONE);
   dump_state(*cpu);
   free(cur);
   free(prev);
@@ -145,6 +148,8 @@ void cpu_load(FILE* from,cpu_t* cpu)
   cpu->address = 0x0;
   // don't draw until the draw opcode occurs
   cpu->draw = 0;
+  // set up the keypad to have no presses registered to begin with
+  cpu->keypad = 0x0000;
 }
 
 cpu_t* new_cpu(void)
@@ -303,6 +308,7 @@ void dump_state(cpu_t cpu)
   printf("Error number: %.2X\n",cpu.errno);
   printf("Draw next frame: %s\n",cpu.draw ? "yes" : "no");
   printf("Next opcode: %.4X\n",(cpu.memory[cpu.pc]<<8) | cpu.memory[cpu.pc+1]);
+  printf("Keypad value (hex): %.4X\n",cpu.keypad);
   stack_trace(cpu);
   heap_dump(cpu);
 }

@@ -19,7 +19,29 @@ enum ERRORS {
   ENIMP = 0x6,
   // segmentation fault
   ESEGV = 0x7,
+  // user quit
+  EUSRQ = 0x8,
 };
+
+ 
+ enum chip8_key {
+	 KEY_1 = 0x0001,
+	 KEY_2 = 0x0002,
+	 KEY_3 = 0x0004,
+	 KEY_C = 0x0008,
+	 KEY_4 = 0x0010,
+	 KEY_5 = 0x0020,
+     KEY_6 = 0x0040,
+     KEY_D = 0x0080,
+     KEY_7 = 0x0100,
+     KEY_8 = 0x0200,
+     KEY_9 = 0x0400,
+     KEY_E = 0x0800,
+     KEY_A = 0x1000,
+     KEY_0 = 0x2000,
+     KEY_B = 0x4000,
+     KEY_F = 0x8000
+ };
 
 typedef struct {
   uint8_t registers[16];
@@ -32,7 +54,7 @@ typedef struct {
   uint16_t address;
   uint8_t screen[64][32];
   uint8_t draw;
-  uint8_t keypad[16];
+  uint16_t keypad;
   uint8_t* memory;
 } cpu_t;
 

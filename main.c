@@ -44,5 +44,6 @@ int main(int argc, char** argv)
     fclose(infile);
   }
   free_cpu(cpu);
+  SDL_Quit();
   return rv;
 }
