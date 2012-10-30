@@ -1,6 +1,8 @@
 #ifndef CPU_H
 #define CPU_H
 
+#include <SDL/SDL.h>
+
 enum ERRORS {
   ENONE = 0x0,
   // pc overflow
@@ -41,7 +43,7 @@ void heap_dump(cpu_t cpu);
 void stack_trace(cpu_t cpu);
 void step(cpu_t* cpu);
 void cpu_load(FILE* from,cpu_t* cpu);
-void cpu_run(cpu_t* cpu);
+void cpu_run(cpu_t* cpu,SDL_Surface* screen);
 void flip(uint8_t screen[64][32],unsigned int frameno);
 
 #endif

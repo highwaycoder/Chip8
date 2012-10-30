@@ -5,6 +5,8 @@
 #include <sys/time.h>
 #include <unistd.h>
 #include <signal.h>
+#include <SDL/SDL.h>
+#include "sdl.h"
 #include "opcodes.h"
 #include "cpu.h"
 
@@ -45,7 +47,7 @@ const uint16_t interpreter[512] = {
   
 void ignore_signal(int signum) {}
 
-void cpu_run(cpu_t* cpu)
+void cpu_run(cpu_t* cpu,SDL_Surface* screen)
 {
   struct timeval* prev = malloc(sizeof(struct timeval));
   struct timeval* cur = malloc(sizeof(struct timeval));
@@ -72,7 +74,7 @@ void cpu_run(cpu_t* cpu)
     #else
     if(cpu->draw)
     {
-      flip(cpu->screen,frameno);
+      sdl_flip(screen,cpu->screen,frameno);
       cpu->draw = 0;
       usleep(500);
     }
@@ -101,7 +103,7 @@ void cpu_run(cpu_t* cpu)
   free(cur);
   free(prev);
 }
-
+/* old, text version
 void flip(uint8_t screen[64][32],unsigned int frameno)
 {
   int x = 0,y = 0;
@@ -124,7 +126,7 @@ void flip(uint8_t screen[64][32],unsigned int frameno)
   printf("\\==============================================================/\n");
   printf("Frame number: %d\n",frameno);
 }
-
+*/
 void cpu_load(FILE* from,cpu_t* cpu)
 {
   uint8_t* load_into = &(cpu->memory[0x200]);

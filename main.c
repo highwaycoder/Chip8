@@ -1,5 +1,7 @@
 #include <stdio.h>
 #include <stdint.h>
+#include <SDL/SDL.h>
+#include "sdl.h"
 #include "cpu.h"
 
 #define usage "Usage: chip8 romfile"
@@ -10,6 +12,7 @@ int main(int argc, char** argv)
   cpu = new_cpu();
   FILE* infile = NULL;
   int rv = 0;
+  SDL_Surface* screen = NULL;
   switch(argc)
   {
     case 0:
@@ -32,7 +35,12 @@ int main(int argc, char** argv)
   if(infile != NULL)
   {
     cpu_load(infile,cpu);
-    cpu_run(cpu);
+    sdl_init(&screen);
+    // make sure the 'screen' could be initialized
+    if(screen != NULL)
+        cpu_run(cpu,screen);
+    else
+        fprintf(stderr,"ERROR: could not initialize SDL_Surface* screen.\n");
     fclose(infile);
   }
   free_cpu(cpu);

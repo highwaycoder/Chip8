@@ -3,8 +3,8 @@ CFLAGS=-Wall -Wextra -std=gnu99 -pedantic -g -fbounds-check
 LDFLAGS=
 PROGNAME=chip8
 
-$(PROGNAME): main.c cpu.o opcodes.o
-	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PROGNAME)  main.c cpu.o opcodes.o
+$(PROGNAME): main.c cpu.o opcodes.o sdl.o
+	$(CC) $(CFLAGS) $(LDFLAGS) -o $(PROGNAME)  main.c cpu.o opcodes.o sdl.o `sdl-config --libs`
 	$(MAKE) clean-objs
 
 cpu.o: cpu.c cpu.h opcodes.h
@@ -12,6 +12,9 @@ cpu.o: cpu.c cpu.h opcodes.h
 
 opcodes.o: opcodes.c opcodes.h
 	$(CC) $(CFLAGS) -o opcodes.o -c opcodes.c
+	
+sdl.o: sdl.c sdl.h
+	$(CC) $(CFLAGS) `sdl-config --cflags` -o sdl.o -c sdl.c
 
 debug:
 	$(MAKE) chip8debug CFLAGS=-DDEBUG_MODE PROGNAME=chip8debug
