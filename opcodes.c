@@ -321,17 +321,8 @@ void drw(cpu_t* cpu,uint16_t current_opcode)
   cpu->pc += 2;
 }
 
-// helper function to get the key's bit from its value
-uint16_t key_bit(uint8_t v)
-{
-    uint16_t r[] = {
-        0x0001,0x0002,0x0004,0x0008,
-        0x0010,0x0020,0x0040,0x0080,
-        0x0100,0x0200,0x0400,0x0800,
-        0x1000,0x2000,0x4000,0x8000,
-    };
-    return r[v]; // I swear I didn't do that on purpose...
-}
+// this macro just gives us a bit of a helping hand getting to the right bit
+#define key_bit(x) (1<<x)
 
 void skp(cpu_t* cpu,uint16_t current_opcode)
 {

@@ -89,30 +89,71 @@ void keypad_helper(cpu_t* cpu,SDL_KeyboardEvent ke)
 	enum chip8_key affected_key;
 	switch(ke.keysym.sym)
 	{
-		// 2
-		case SDLK_UP:
+		// 1
 		case SDLK_w:
-		case SDLK_KP8:
+			affected_key = KEY_1;
+			break;
+		// 2
+		case SDLK_e:
 			affected_key = KEY_2;
 			break;
-		// 8
-		case SDLK_DOWN:
-		case SDLK_s:
-		case SDLK_KP2:
-			affected_key = KEY_8;
+		// 3
+		case SDLK_r:
+			affected_key = KEY_3;
+			break;
+		// C
+		case SDLK_t:
+			affected_key = KEY_C;
 			break;
 		// 4
-		case SDLK_LEFT:
-		case SDLK_a:
-		case SDLK_KP4:
+		case SDLK_s:
 			affected_key = KEY_4;
 			break;
-		// 6
-		case SDLK_RIGHT:
+		// 5
 		case SDLK_d:
-		case SDLK_KP6:
+			affected_key = KEY_5;
+			break;
+		// 6
+		case SDLK_f:
 			affected_key = KEY_6;
 			break;
+		// D
+		case SDLK_g:
+			affected_key = KEY_D;
+			break;
+		// 7
+		case SDLK_x:
+			affected_key = KEY_7;
+			break;
+		// 8
+		case SDLK_c:
+			affected_key = KEY_8;
+			break;
+		// 9
+		case SDLK_v:
+			affected_key = KEY_9;
+			break;
+		// E
+		case SDLK_b:
+			affected_key = KEY_E;
+			break;
+		// A
+		case SDLK_h:
+			affected_key = KEY_A;
+			break;
+		// 0
+		case SDLK_j:
+			affected_key = KEY_0;
+			break;
+		// B
+		case SDLK_k:
+			affected_key = KEY_B;
+			break;
+		// F
+		case SDLK_l:
+			affected_key = KEY_F;
+			break;
+		// quit
 		case SDLK_q:
 			// use the Q key to quit
 			cpu->errno = EUSRQ;

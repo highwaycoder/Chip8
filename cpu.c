@@ -77,7 +77,7 @@ void cpu_run(cpu_t* cpu,SDL_Surface* screen)
       sdl_handle_events(cpu);
       sdl_flip(screen,cpu->screen,frameno);
       cpu->draw = 0;
-      usleep(5000);
+      usleep(1000);
     }
     #endif
     step(cpu);
