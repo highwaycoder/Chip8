@@ -328,7 +328,8 @@ void skp(cpu_t* cpu,uint16_t current_opcode)
   uint16_t which_key = cpu->registers[(current_opcode & 0x0F00) >> 8];
   if((cpu->keypad & key_bit(which_key)))
     cpu->pc += 4;
-  cpu->pc += 2;
+  else
+    cpu->pc += 2;
 }
 
 void sknp(cpu_t* cpu,uint16_t current_opcode)
@@ -336,7 +337,8 @@ void sknp(cpu_t* cpu,uint16_t current_opcode)
   uint16_t which_key = cpu->registers[(current_opcode & 0x0F00) >> 8];
   if(!(cpu->keypad & key_bit(which_key)))
     cpu->pc += 4;
-  cpu->pc += 2;
+  else
+    cpu->pc += 2;
 }
 
 // helper functions
