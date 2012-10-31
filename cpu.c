@@ -45,7 +45,7 @@ const uint16_t interpreter[512] = {
   0x80F0,0x80F0,0x0080
   };
   
-void ignore_signal(int signum) {}
+void handle_signal(int signum) {}
 
 void cpu_run(cpu_t* cpu,SDL_Surface* screen)
 {
@@ -56,13 +56,17 @@ void cpu_run(cpu_t* cpu,SDL_Surface* screen)
   srand(prev->tv_usec);
   
   // block the SIGINT signal so we can use it to interrupt the cpu
-  struct sigaction ignore;
-  ignore.sa_handler = ignore_signal;
-  sigaction(SIGINT,&ignore,NULL);
+  struct sigaction handler;
+  handler.sa_handler = handle_signal;
+  sigaction(SIGINT,&handler,NULL);
+  
+  // handle the SIGUSR1 signal to dump cpu state
+  sigaction(SIGUSR1,&handler,NULL);
   
   sigset_t signals_to_block;
   sigemptyset(&signals_to_block);
   sigaddset(&signals_to_block,SIGINT);
+  sigaddset(&signals_to_block,SIGUSR1);
   sigprocmask(SIG_SETMASK,&signals_to_block,NULL);
   
   do
@@ -72,20 +76,25 @@ void cpu_run(cpu_t* cpu,SDL_Surface* screen)
     // don't forget to reset this, even in debug mode!
     if(cpu->draw) cpu->draw = 0;
     #else
+    // handle events regardless of drawing or not
+    sdl_handle_events(cpu);
     if(cpu->draw)
     {
-      sdl_handle_events(cpu);
       sdl_flip(screen,cpu->screen,frameno);
       cpu->draw = 0;
       usleep(1000);
     }
     #endif
-    step(cpu);
-    frameno++;
+    if(cpu->wait == b_FALSE)
+    {
+        step(cpu);
+        frameno++;
+    }
     gettimeofday(cur,NULL);
     
     if(cpu->delay > 0)
       cpu->delay--;
+    
     if(cpu->sound > 0)
       cpu->sound--;
     
@@ -95,13 +104,15 @@ void cpu_run(cpu_t* cpu,SDL_Surface* screen)
     getchar();
     #endif
     
-    // poll for SIGINT, break on sigint
+    // signal polling stuff
     sigset_t signal_set;
     sigpending(&signal_set);
     if(sigismember(&signal_set,SIGINT)) {
         cpu->errno = EUSRQ;
+    } else if(sigismember(&signal_set,SIGUSR1)) {
+        dump_state(*cpu);
     }
-  }while(cpu->errno == ENONE);
+  } while(cpu->errno == ENONE);
   dump_state(*cpu);
   free(cur);
   free(prev);
@@ -150,6 +161,8 @@ void cpu_load(FILE* from,cpu_t* cpu)
   cpu->draw = 0;
   // set up the keypad to have no presses registered to begin with
   cpu->keypad = 0x0000;
+  // don't start in suspended mode
+  cpu->wait = b_FALSE;
 }
 
 cpu_t* new_cpu(void)
@@ -309,6 +322,7 @@ void dump_state(cpu_t cpu)
   printf("Draw next frame: %s\n",cpu.draw ? "yes" : "no");
   printf("Next opcode: %.4X\n",(cpu.memory[cpu.pc]<<8) | cpu.memory[cpu.pc+1]);
   printf("Keypad value (hex): %.4X\n",cpu.keypad);
+  printf("%s\n",cpu.wait==b_TRUE?"waiting for input":"running");
   stack_trace(cpu);
   heap_dump(cpu);
 }

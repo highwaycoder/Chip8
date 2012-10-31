@@ -42,6 +42,11 @@ enum ERRORS {
      KEY_B = 0x4000,
      KEY_F = 0x8000
  };
+ 
+ enum boolean {
+     b_FALSE = 0,
+     b_TRUE = 1,
+ };
 
 typedef struct {
   uint8_t registers[16];
@@ -56,6 +61,7 @@ typedef struct {
   uint8_t draw;
   uint16_t keypad;
   uint8_t* memory;
+  enum boolean wait;
 } cpu_t;
 
 void dump_state(cpu_t cpu);

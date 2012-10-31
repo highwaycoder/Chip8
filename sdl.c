@@ -169,6 +169,11 @@ void keypad_helper(cpu_t* cpu,SDL_KeyboardEvent ke)
 	{
 		cpu->keypad &= ~affected_key;
 	}
+	// if we were previously waiting, make it so we're not any more
+	// note that we don't actually need to check if we were waiting,
+	// as setting it to false from false has no affect and costs the
+	// same as a comparison AFAIK
+	cpu->wait = b_FALSE;
 }
 
 void sdl_handle_events(cpu_t* cpu)

@@ -104,9 +104,8 @@ void ld(cpu_t* cpu,uint16_t current_opcode)
         cpu->registers[(current_opcode & 0x0F00) >> 8] = cpu->delay;
         break;
       case 0x0A:
-        // TODO: not implemented
-        cpu->errno = ENIMP;
-        printf("Warning: unimplemented opcode used");
+        // wait until keypress is registered before continuing
+        cpu->wait = b_TRUE;
         break;
       case 0x15:
         cpu->delay = cpu->registers[(current_opcode & 0x0F00) >> 8];
@@ -331,6 +330,7 @@ void skp(cpu_t* cpu,uint16_t current_opcode)
     cpu->pc += 4;
   cpu->pc += 2;
 }
+
 void sknp(cpu_t* cpu,uint16_t current_opcode)
 {
   uint16_t which_key = cpu->registers[(current_opcode & 0x0F00) >> 8];
