@@ -62,6 +62,8 @@ typedef struct {
   uint16_t keypad;
   uint8_t* memory;
   enum boolean wait;
+  uint16_t breakpoint;
+  enum boolean stepping;
 } cpu_t;
 
 void dump_state(cpu_t cpu);

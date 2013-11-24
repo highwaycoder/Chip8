@@ -159,7 +159,9 @@ void ld(cpu_t* cpu,uint16_t current_opcode)
   {
     cpu->errno = EBDOP;
   }
-  cpu->pc += 2;
+  // make an exception for 0xF00A because it's the paste-eating child of this family of opcodes
+  if(current_opcode != 0xF00A)
+    cpu->pc += 2;
 }
 
 void add(cpu_t* cpu,uint16_t current_opcode)

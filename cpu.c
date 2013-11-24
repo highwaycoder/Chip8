@@ -82,8 +82,8 @@ void cpu_run(cpu_t* cpu,SDL_Surface* screen)
     {
       sdl_flip(screen,cpu->screen,frameno);
       cpu->draw = 0;
-      // scale the CPU down to near chip8 levels (but a bit faster because why not?)
-      //usleep(1666);
+      // scale the CPU down to near chip8 levels (TODO: make this configurable)
+      usleep(10000);
     }
     #endif
     if(cpu->wait == b_FALSE)
@@ -101,8 +101,15 @@ void cpu_run(cpu_t* cpu,SDL_Surface* screen)
     
     // pause for input
     #ifdef DEBUG_MODE
-    
-    getchar();
+    if(cpu->stepping == b_TRUE)
+    {
+      getchar();
+    }
+    // check if the breakpoint has been reached, if so flag 'wait'
+    if(cpu->breakpoint == cpu->pc)
+    {
+      cpu->stepping = b_TRUE;
+    }
     #endif
     
     // signal polling stuff
@@ -141,6 +148,9 @@ void cpu_load(FILE* from,cpu_t* cpu)
   cpu->keypad = 0x0000;
   // don't start in suspended mode
   cpu->wait = b_FALSE;
+  // if no breakpoint is set, set it at the very end of the program to stop the cpu pausing constantly
+  cpu->breakpoint = 0xFFFF;
+  cpu->stepping = b_FALSE;
 }
 
 cpu_t* new_cpu(void)
@@ -291,11 +301,16 @@ void dump_state(cpu_t cpu)
 {
   int i=0;
   for(i=0;i<16;i++)
-    printf("Register %.1X: %.2X\n",i,cpu.registers[i]);
-  printf("Address Register (I): %.4X\n",cpu.address);
-  printf("Delay register: %.2X\n",cpu.delay);
-  printf("Sound register: %.2X\n",cpu.sound);
-  printf("Program Counter: %.4X\n",cpu.pc);
+  {
+    char c = ((i%4 == 3) ? '\n' : '\t');
+    printf("Register %.1X: %.2X",i,cpu.registers[i]);
+    putchar(c);
+  }
+  printf("Address: %.4X\t",cpu.address);
+  printf("Delay: %.2X\t",cpu.delay);
+  printf("Sound: %.2X\n",cpu.sound);
+  printf("Program Counter: %.4X\t",cpu.pc);
+  printf("Breakpoint: %.4X\n",cpu.breakpoint);
   printf("Error number: %.2X\n",cpu.errno);
   printf("Draw next frame: %s\n",cpu.draw ? "yes" : "no");
   printf("Next opcode: %.4X\n",(cpu.memory[cpu.pc]<<8) | cpu.memory[cpu.pc+1]);
@@ -310,15 +325,17 @@ void heap_dump(cpu_t cpu)
   FILE* logfile = fopen("core.dmp","w");
   if(logfile == NULL)
     return;
+  #ifdef BINARY_DUMPS
   fwrite(cpu.memory,1,0x1000,logfile);
-  /* -- non-binary version --
+  #else
+  int i = 0;
   fprintf(logfile,"Memory: \n");
   for(i=0;i<0x1000;i++)
   {
     fprintf(logfile,"{%.4X : %.2X} ",i,cpu.memory[i]);
     if(!(i % 5)) fputc('\n',logfile);
   }
-  */
+  #endif
   fclose(logfile);
 }
 

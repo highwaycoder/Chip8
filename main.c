@@ -27,6 +27,10 @@ int main(int argc, char** argv)
       infile = fopen(argv[1],"r");
       rv = (infile == NULL ? !0 : 0);
       break;
+    case 3:
+      infile = fopen(argv[1],"r");
+      rv = (infile == NULL ? !0 : 0);
+      break;
     default:
       printf("%s\n",usage);
       rv = !0;
@@ -35,12 +39,21 @@ int main(int argc, char** argv)
   if(infile != NULL)
   {
     cpu_load(infile,cpu);
+    // must do this after cpu has initialized
+    if(argc == 3)
+      cpu->breakpoint = atoi(argv[2]);
+    #ifndef DEBUG_MODE
     sdl_init(&screen);
+    #endif
     // make sure the 'screen' could be initialized
+    #ifndef DEBUG_MODE
     if(screen != NULL)
         cpu_run(cpu,screen);
     else
         fprintf(stderr,"ERROR: could not initialize SDL_Surface* screen.\n");
+    #else
+        cpu_run(cpu,screen);
+    #endif
     fclose(infile);
   }
   free_cpu(cpu);
