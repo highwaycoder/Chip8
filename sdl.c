@@ -5,7 +5,7 @@
 void sdl_init(SDL_Surface** screen)
 {
 	SDL_Init(SDL_INIT_EVERYTHING);
-	*screen = SDL_SetVideoMode(SDL_RESX,SDL_RESY,SDL_BPP,SDL_HWSURFACE);
+	*screen = SDL_SetVideoMode(SDL_RESX,SDL_RESY,SDL_BPP,SDL_HWSURFACE | SDL_DOUBLEBUF);
 }
 
 void sdl_flip(SDL_Surface* target,uint8_t source[64][32],unsigned int frameno)

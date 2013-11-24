@@ -82,7 +82,8 @@ void cpu_run(cpu_t* cpu,SDL_Surface* screen)
     {
       sdl_flip(screen,cpu->screen,frameno);
       cpu->draw = 0;
-      usleep(1000);
+      // scale the CPU down to near chip8 levels (but a bit faster because why not?)
+      //usleep(1666);
     }
     #endif
     if(cpu->wait == b_FALSE)
@@ -117,30 +118,7 @@ void cpu_run(cpu_t* cpu,SDL_Surface* screen)
   free(cur);
   free(prev);
 }
-/* old, text version
-void flip(uint8_t screen[64][32],unsigned int frameno)
-{
-  int x = 0,y = 0;
-  printf("/==============================================================\\\n");
-  while(y < 32)
-  {
-    if(screen[x][y] & 0x1)
-      putchar('#');
-    else
-      putchar(' ');
-    x++;
-    if(x == 64)
-    {
-      putchar('|');
-      putchar('\n');
-      x = 0;
-      y++;
-    }
-  }
-  printf("\\==============================================================/\n");
-  printf("Frame number: %d\n",frameno);
-}
-*/
+
 void cpu_load(FILE* from,cpu_t* cpu)
 {
   uint8_t* load_into = &(cpu->memory[0x200]);

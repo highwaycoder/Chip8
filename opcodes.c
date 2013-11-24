@@ -269,13 +269,6 @@ void drw(cpu_t* cpu,uint16_t current_opcode)
   // no collision yet
   cpu->registers[0xF] = 0x0;
   
-  /* - check should in theory be irrelevant now
-  if(x_coord >= 64 || y_coord + (num_bytes-1) >= 32)
-  {
-      fprintf(stderr,"Tried to draw outside the screen at (%d,%d - %d)\n",x_coord,y_coord,y_coord+(num_bytes-1));
-      return;
-  }
-  */
   for(i=0;i<num_bytes;i++)
   {
     sprite_byte = cpu->memory[cpu->address + i];
