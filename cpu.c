@@ -68,14 +68,40 @@ void cpu_run(cpu_t* cpu,SDL_Surface* screen)
   sigaddset(&signals_to_block,SIGINT);
   sigaddset(&signals_to_block,SIGUSR1);
   sigprocmask(SIG_SETMASK,&signals_to_block,NULL);
-  
+
+  #ifdef DEBUG_MODE
+  FILE* stacktrc = fopen("stack.trc","w");
+  #endif
   do
   {
+    // before anything, check if a key has been pressed this loop and disable waiting if it has
+    if(cpu->keypad != 0 && cpu->wait == b_TRUE)
+    {
+      // increment the program counter because it hasn't been incremented yet
+      cpu->pc+=2;
+      cpu->wait = b_FALSE;
+    }
     #ifdef DEBUG_MODE
-    dump_state(*cpu);
-    // don't forget to reset this, even in debug mode!
-    if(cpu->draw) cpu->draw = 0;
-    #else
+    // don't dump state during wait
+    if(cpu->wait == b_FALSE)
+    {
+      // rolls over at step 65535 but that's not the end of the world as long as you quit early enough
+      fprintf(stacktrc,"------- STEP NUMBER: %.4X -------\n",frameno);
+      dump_state(*cpu,stacktrc);
+      fputc('\n',stacktrc);
+    }
+    // pause for input
+    if(cpu->stepping == b_TRUE)
+    {
+      cpu->keypad = key_value(getchar());
+    }
+    // check if the breakpoint has been reached, if so flag 'stepping'
+    if(cpu->breakpoint == cpu->pc)
+    {
+      cpu->stepping = b_TRUE;
+      cpu->keypad = getchar();
+    }
+    #endif
     // handle events regardless of drawing or not
     sdl_handle_events(cpu);
     if(cpu->draw)
@@ -85,7 +111,6 @@ void cpu_run(cpu_t* cpu,SDL_Surface* screen)
       // scale the CPU down to near chip8 levels (TODO: make this configurable)
       usleep(10000);
     }
-    #endif
     if(cpu->wait == b_FALSE)
     {
         step(cpu);
@@ -99,31 +124,22 @@ void cpu_run(cpu_t* cpu,SDL_Surface* screen)
     if(cpu->sound > 0)
       cpu->sound--;
     
-    // pause for input
-    #ifdef DEBUG_MODE
-    if(cpu->stepping == b_TRUE)
-    {
-      getchar();
-    }
-    // check if the breakpoint has been reached, if so flag 'wait'
-    if(cpu->breakpoint == cpu->pc)
-    {
-      cpu->stepping = b_TRUE;
-    }
-    #endif
-    
     // signal polling stuff
     sigset_t signal_set;
     sigpending(&signal_set);
     if(sigismember(&signal_set,SIGINT)) {
         cpu->errno = EUSRQ;
     } else if(sigismember(&signal_set,SIGUSR1)) {
-        dump_state(*cpu);
+        dump_state(*cpu,stdout);
     }
+
   } while(cpu->errno == ENONE);
-  dump_state(*cpu);
+  dump_state(*cpu,stdout);
   free(cur);
   free(prev);
+  #ifdef DEBUG_MODE
+  fclose(stacktrc);
+  #endif
 }
 
 void cpu_load(FILE* from,cpu_t* cpu)
@@ -297,26 +313,26 @@ void free_cpu(cpu_t* cpu)
   free(cpu);
 }
 
-void dump_state(cpu_t cpu)
+void dump_state(cpu_t cpu, FILE* logfile)
 {
   int i=0;
   for(i=0;i<16;i++)
   {
     char c = ((i%4 == 3) ? '\n' : '\t');
-    printf("Register %.1X: %.2X",i,cpu.registers[i]);
-    putchar(c);
+    fprintf(logfile,"Register %.1X: %.2X",i,cpu.registers[i]);
+    fputc(c,logfile);
   }
-  printf("Address: %.4X\t",cpu.address);
-  printf("Delay: %.2X\t",cpu.delay);
-  printf("Sound: %.2X\n",cpu.sound);
-  printf("Program Counter: %.4X\t",cpu.pc);
-  printf("Breakpoint: %.4X\n",cpu.breakpoint);
-  printf("Error number: %.2X\n",cpu.errno);
-  printf("Draw next frame: %s\n",cpu.draw ? "yes" : "no");
-  printf("Next opcode: %.4X\n",(cpu.memory[cpu.pc]<<8) | cpu.memory[cpu.pc+1]);
-  printf("Keypad value (hex): %.4X\n",cpu.keypad);
-  printf("%s\n",cpu.wait==b_TRUE?"waiting for input":"running");
-  stack_trace(cpu);
+  fprintf(logfile,"Address: %.4X\t",cpu.address);
+  fprintf(logfile,"Delay: %.2X\t",cpu.delay);
+  fprintf(logfile,"Sound: %.2X\n",cpu.sound);
+  fprintf(logfile,"Program Counter: %.4X\t",cpu.pc);
+  fprintf(logfile,"Breakpoint: %.4X\n",cpu.breakpoint);
+  fprintf(logfile,"Error number: %.2X\n",cpu.errno);
+  fprintf(logfile,"Draw next frame: %s\n",cpu.draw ? "yes" : "no");
+  fprintf(logfile,"Next opcode: %.4X\n",(cpu.memory[cpu.pc]<<8) | cpu.memory[cpu.pc+1]);
+  fprintf(logfile,"Keypad value (hex): %.4X\n",cpu.keypad);
+  fprintf(logfile,"%s\n",cpu.wait==b_TRUE?"waiting for input":"running");
+  stack_trace(cpu,logfile);
   heap_dump(cpu);
 }
 
@@ -339,19 +355,19 @@ void heap_dump(cpu_t cpu)
   fclose(logfile);
 }
 
-void stack_trace(cpu_t cpu)
+void stack_trace(cpu_t cpu, FILE* logfile)
 {
   int i = 0;
-  printf("Stack trace: \n");
+  fprintf(logfile,"Stack trace: \n");
   if(cpu.stack_pointer > 0)
   {
     for(i=cpu.stack_pointer;i>0;i--)
     {
-      printf("\t0x%.1X : %.2X\n",i,cpu.stack[i]);
+      fprintf(logfile,"\t0x%.1X : %.2X\n",i,cpu.stack[i]);
     }
   }
   else
   {
-    printf("\tStack empty\n");
+    fprintf(logfile,"\tStack empty\n");
   }
 }

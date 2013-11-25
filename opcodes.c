@@ -173,13 +173,36 @@ void add(cpu_t* cpu,uint16_t current_opcode)
   }
   else if((current_opcode & 0xF00F) == 0x8004)
   {
-    cache = cpu->registers[(current_opcode & 0x0F00) >> 8];
-    cpu->registers[(current_opcode & 0x0F00) >> 8] += cpu->registers[(current_opcode & 0x00F0) >> 4];
-    if(cpu->registers[(current_opcode & 0x0F00) >> 8] > cpu->registers[(current_opcode & 0x00F0)] ||
-       cpu->registers[(current_opcode & 0x0F00) >> 8] > cache)
-       cpu->registers[0xF] = 1;
+    /*
+      var register_x = (opcode & 0x0F00) >> 8;
+      var register_y = (opcode & 0x00F0) >> 4;
+
+      this.registers[register_x] = this.registers[register_x] + this.registers[register_y];
+
+      if (this.registers[register_x] > 255)
+      {
+        this.registers[register_x] = this.registers[register_x] % 255;
+        
+        // carry
+        this.registers[0xF] = 0x1;
+      }
+      else
+      {
+        // carry
+        this.registers[0xF] = 0x0;
+      }
+    */
+    uint16_t new_value = cpu->registers[(current_opcode & 0x0F00) >> 8] + cpu->registers[(current_opcode & 0x00F0) >> 4];
+    if(new_value > 255)
+    {
+      cpu->registers[(current_opcode & 0x0F00) >> 8] = new_value % 255;
+      cpu->registers[0xF] = 0x01;
+    }
     else
-       cpu->registers[0xF] = 0;
+    {
+      cpu->registers[(current_opcode & 0x0F00) >> 8] = new_value;
+      cpu->registers[0xF] = 0x00;
+    }
   }
   else if((current_opcode & 0xF0FF) == 0xF01E)
   {

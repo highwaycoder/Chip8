@@ -66,11 +66,11 @@ typedef struct {
   enum boolean stepping;
 } cpu_t;
 
-void dump_state(cpu_t cpu);
+void dump_state(cpu_t cpu,FILE* logfile);
 cpu_t* new_cpu(void);
 void free_cpu(cpu_t* cpu);
 void heap_dump(cpu_t cpu);
-void stack_trace(cpu_t cpu);
+void stack_trace(cpu_t cpu,FILE* logfile);
 void step(cpu_t* cpu);
 void cpu_load(FILE* from,cpu_t* cpu);
 void cpu_run(cpu_t* cpu,SDL_Surface* screen);

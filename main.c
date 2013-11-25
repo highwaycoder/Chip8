@@ -42,18 +42,12 @@ int main(int argc, char** argv)
     // must do this after cpu has initialized
     if(argc == 3)
       cpu->breakpoint = atoi(argv[2]);
-    #ifndef DEBUG_MODE
     sdl_init(&screen);
-    #endif
     // make sure the 'screen' could be initialized
-    #ifndef DEBUG_MODE
     if(screen != NULL)
         cpu_run(cpu,screen);
     else
         fprintf(stderr,"ERROR: could not initialize SDL_Surface* screen.\n");
-    #else
-        cpu_run(cpu,screen);
-    #endif
     fclose(infile);
   }
   free_cpu(cpu);
